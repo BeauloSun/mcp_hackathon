@@ -10,3 +10,9 @@
 
 1. uv sync
 2. uv run main.py
+
+# For browser-use package:
+
+uv pip install browser-use
+
+uv run python -m playwright install
