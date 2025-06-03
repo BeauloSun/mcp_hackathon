@@ -6,8 +6,7 @@
 
 3. https://apify.com/store/categories
 
-# Package management
+# How to run
 
-1. experiment/ - pip install -r requirements.txt
-
-2. mcp-server/ - uv sync
+1. uv sync
+2. uv run main.py
