@@ -34,6 +34,8 @@ def interest_calculator(principal: float) -> str:
         return f"An unexpected error occurred: {e}"
 
 # TODO: create shared function to retrieve interest rate
+
+
 @mcp.tool()
 def monthly_payment(principal: float, number_of_years: int) -> str:
     if not ninja_api:
@@ -44,14 +46,14 @@ def monthly_payment(principal: float, number_of_years: int) -> str:
         response = requests.get(api_url, headers={'X-Api-Key': ninja_api})
         response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
         annual_rate = float(response.json()[
-                     'central_bank_rates'][0]['rate_pct']) * 0.01
+            'central_bank_rates'][0]['rate_pct']) * 0.01
         monthly_rate = annual_rate / 12
         num_payments = number_of_years * 12
         if monthly_rate == 0:
             return principal / num_payments
         monthly_payment = principal * (monthly_rate * (1 + monthly_rate) ** num_payments) / \
-                        ((1 + monthly_rate) ** num_payments - 1)
-        
+            ((1 + monthly_rate) ** num_payments - 1)
+
         return f"{monthly_payment}"
     except requests.exceptions.RequestException as e:
         return f"Error fetching interest rate: {e}"
@@ -60,6 +62,11 @@ def monthly_payment(principal: float, number_of_years: int) -> str:
     except Exception as e:
         return f"An unexpected error occurred: {e}"
 
+
+@mcp.tool()
+def browse_internet(principal: float, number_of_years: int) -> str:
+    # TBC........
+    return True
 
 
 def start_mcp_server():
