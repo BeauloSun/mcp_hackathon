@@ -1,5 +1,5 @@
 import gradio as gr
-from src.mcp import start_mcp_server, interest_calculator, monthly_payment
+from src.mcp import start_mcp_server, interest_calculator, monthly_payment, search_internet
 
 
 with gr.Blocks() as demo:
@@ -42,6 +42,22 @@ with gr.Blocks() as demo:
             monthly_payment,
             inputs=(principal_input, years),
             outputs=interest_output
+        )
+
+    with gr.Tab("Use Browser"):
+        gr.Markdown(
+            "This tool requires two inputs: url and task. Given both parameters, it can perform web scraping and return the related information in a human readable sentence(s)")
+        website_url = gr.Textbox(
+            label="URL (e.g.: https://www.google.com)", value='https://www.google.com', interactive=True)
+        task = gr.Textbox(
+            label="Task (e.g.: Find out how old is Donald Trump)", value='Find out how old is Donald Trump',  interactive=True)
+        browser_use_btn = gr.Button("Start browsing")
+        search_output = gr.Textbox(
+            label="Search Output", interactive=False)
+        browser_use_btn.click(
+            search_internet,
+            inputs=(website_url, task),
+            outputs=search_output
         )
 
 # Launch the Gradio app

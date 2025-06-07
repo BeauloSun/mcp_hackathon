@@ -31,13 +31,16 @@ browser_session = BrowserSession(
 
 async def run_search():
     agent = Agent(
-        task='Go to https://www.rightmove.co.uk/, search for all properties for rent within 3 miles radius of Edinburgh, give me the cheapest rent for 1b apartment.',
+        task='Go to https://www.rightmove.co.uk/, find the chepeast 1 bedroom apartment within 3 miles of Edinburgh city centre. Also let me know how much is the deposit',
         llm=llm,
         max_actions_per_step=4,
         browser_session=browser_session,
     )
 
-    await agent.run(max_steps=30)
+    history = await agent.run(max_steps=20)
+    result = history.final_result()
+    with open('result.txt', 'w') as file:
+        file.write(str(result))
 
 
 if __name__ == '__main__':

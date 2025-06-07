@@ -1,4 +1,8 @@
+from browser_use import Agent
+from browser_use.browser import BrowserProfile, BrowserSession
+from langchain_google_genai import ChatGoogleGenerativeAI
 import requests
+import asyncio
 
 from mcp.server.fastmcp import FastMCP
 
@@ -8,6 +12,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 ninja_api = os.getenv("NINJA_API")
+gemini_api = os.getenv('GEMINI_API_KEY')
 # --------------------- Getting API key ---------------------
 
 mcp = FastMCP("Demo")
@@ -64,9 +69,56 @@ def monthly_payment(principal: float, number_of_years: int) -> str:
 
 
 @mcp.tool()
-def browse_internet(principal: float, number_of_years: int) -> str:
+def browse_internet() -> str:
     # TBC........
+
     return True
+
+
+@mcp.tool()
+def search_internet(url: str, task: str) -> str:
+    """
+    **Navigates to a specified URL, performs web scraping based on a given task,
+    and returns relevant information in a human-readable sentence(s).**
+
+    Args:
+        url (str): The complete URL (e.g., "https://www.example.com/page") to navigate to and scrape. This should be a full and valid URL.
+        task (str): The task required to complete, summarized or inferenced from the original user input. To determine what is needed to be found using web search.
+
+    Returns:
+        str: A string containing the extracted information or a summary of the
+             Browse outcome. This will be a human-readable sentence or paragraph.
+             Returns an error message if navigation or scraping fails.
+    """
+    llm = ChatGoogleGenerativeAI(
+        model='gemini-2.0-flash-exp', api_key=gemini_api)
+
+    browser_session = BrowserSession(
+        browser_profile=BrowserProfile(
+            viewport_expansion=0,
+            user_data_dir='~/.config/browseruse/profiles/default',
+        )
+    )
+
+    async def run_Browse_task():
+        agent = Agent(
+            task=f'Go to {url}, and perform the task: {task}',
+            llm=llm,
+            max_actions_per_step=5,
+            browser_session=browser_session,
+        )
+        try:
+            history = await agent.run(max_steps=20)
+            result = str(history.final_result())
+            return f"Successfully went through {url}. Result message: {result}"
+        except Exception as e:
+            return f"Failed to navigate to {url}: {e}"
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    result = loop.run_until_complete(run_Browse_task())
+    loop.close()
+    return result
 
 
 def start_mcp_server():
