@@ -69,13 +69,6 @@ def monthly_payment(principal: float, number_of_years: int) -> str:
 
 
 @mcp.tool()
-def browse_internet() -> str:
-    # TBC........
-
-    return True
-
-
-@mcp.tool()
 def search_internet(url: str, task: str) -> str:
     """
     **Navigates to a specified URL, performs web scraping based on a given task,
@@ -119,6 +112,18 @@ def search_internet(url: str, task: str) -> str:
     result = loop.run_until_complete(run_Browse_task())
     loop.close()
     return result
+
+
+@mcp.tool()
+def tax(region: str, transaction: str):
+    if region.lower() in 'england' or region.lower() in 'northern ireland':
+        url = 'https://www.tax.service.gov.uk/calculate-stamp-duty-land-tax/#!/intro'
+        task = """
+        Follow the below steps to use the tax calculator in the url.
+        1. Click 'Start Now'
+        2. Click {tranaction}, and click continue
+        """
+        result = search_internet(url, task)
 
 
 def start_mcp_server():
