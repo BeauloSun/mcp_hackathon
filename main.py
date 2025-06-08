@@ -1,5 +1,5 @@
 import gradio as gr
-from src.mcp import start_mcp_server, interest_calculator, monthly_payment, search_internet
+from src.mcp import start_mcp_server, interest_calculator, monthly_payment, search_internet, calculate_stamp_duty
 
 
 with gr.Blocks() as demo:
@@ -58,6 +58,20 @@ with gr.Blocks() as demo:
             search_internet,
             inputs=(website_url, task),
             outputs=search_output
+        )
+
+    with gr.Tab("Stamp Duty Calculator"):
+        gr.Markdown("## Stamp Duty Calculator")
+        gr.Markdown("Calculate the stamp duty based on property price, first-time buyer, and additional property options.")
+        property_price_input = gr.Number(label="Property Price (£)", value=250000.00)
+        is_first_time_buyer_input = gr.Checkbox(label="First-time Buyer", value=False)
+        is_additional_property_input = gr.Checkbox(label="Additional Property", value=False)
+        calculate_stamp_duty_btn = gr.Button("Calculate Stamp Duty")
+        stamp_duty_output = gr.JSON(label="Stamp Duty Output")
+        calculate_stamp_duty_btn.click(
+            calculate_stamp_duty,
+            inputs=[property_price_input, is_first_time_buyer_input, is_additional_property_input],
+            outputs=stamp_duty_output
         )
 
 # Launch the Gradio app
