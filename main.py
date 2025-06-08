@@ -14,7 +14,7 @@ with gr.Blocks() as demo:
         start_server_btn.click(start_mcp_server, outputs=server_status_output)
 
     # Dynamically create tabs for each registered tool
-    for tool_name, tool_fn in mcp.tools.items():
+    for tool_name, tool_fn in mcp._tools.items():
         with gr.Tab(tool_name.replace('_', ' ').title()):
             gr.Markdown(f"## {tool_name.replace('_', ' ').title()}")
             sig = inspect.signature(tool_fn)
