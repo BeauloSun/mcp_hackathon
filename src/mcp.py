@@ -113,15 +113,85 @@ def search_internet(url: str, task: str) -> str:
     loop.close()
     return result
 
-
 @mcp.tool()
+def calculate_stamp_duty(property_price, is_first_time_buyer=False, is_additional_property=False):
+    # TODO: add logic to update this
+    property_price = float(property_price)
+    standard_bands = [
+        (125000, 0.0),      
+        (250000, 0.02),     
+        (925000, 0.05),     
+        (1500000, 0.10),    
+        (float('inf'), 0.12)
+    ]
+    
+    first_time_buyer_bands = [
+        (300000, 0.0),     
+        (500000, 0.05),     
+        (925000, 0.05),     
+        (1500000, 0.10),    
+        (float('inf'), 0.12)
+    ]
+    additional_property_surcharge = 0.05
+    if is_first_time_buyer and property_price <= 500000:
+        bands = first_time_buyer_bands
+    else:
+        bands = standard_bands
+    
+    stamp_duty = 0
+    breakdown = []
+    remaining_price = property_price
+    previous_threshold = 0
+    
+    for threshold, rate in bands:
+        if remaining_price <= 0:
+            break
+            
+        # Calculate the amount in this band
+        band_amount = min(remaining_price, threshold - previous_threshold)
+        band_duty = band_amount * rate
+        
+        # Add additional property surcharge if applicable
+        if is_additional_property:
+            surcharge = band_amount * additional_property_surcharge
+            band_duty += surcharge
+        
+        stamp_duty += band_duty
+        
+        if band_amount > 0:
+            rate_display = rate * 100
+            if is_additional_property:
+                rate_display += additional_property_surcharge * 100
+            
+            breakdown.append({
+                'band': f'£{previous_threshold:,} - £{min(threshold, property_price):,}',
+                'amount': band_amount,
+                'rate': f'{rate_display}%',
+                'duty': band_duty
+            })
+        
+        remaining_price -= band_amount
+        previous_threshold = threshold
+        
+        if threshold >= property_price:
+            break
+    
+    return {
+        'total_stamp_duty': round(stamp_duty, 2),
+        'property_price': property_price,
+        'is_first_time_buyer': is_first_time_buyer,
+        'is_additional_property': is_additional_property,
+        'breakdown': breakdown
+    }
+
+
 def tax(region: str, transaction: str):
     if region.lower() in 'england' or region.lower() in 'northern ireland':
         url = 'https://www.tax.service.gov.uk/calculate-stamp-duty-land-tax/#!/intro'
         task = """
         Follow the below steps to use the tax calculator in the url.
         1. Click 'Start Now'
-        2. Click {tranaction}, and click continue
+        2. Click {transaction}, and click continue
         """
         result = search_internet(url, task)
 
