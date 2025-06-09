@@ -3,6 +3,7 @@ from browser_use.browser import BrowserProfile, BrowserSession
 from langchain_google_genai import ChatGoogleGenerativeAI
 import requests
 import asyncio
+from gmap import find_place_id, get_review_data
 
 from mcp.server.fastmcp import FastMCP
 
@@ -13,6 +14,7 @@ from dotenv import load_dotenv
 load_dotenv()
 ninja_api = os.getenv("NINJA_API")
 gemini_api = os.getenv('GEMINI_API_KEY')
+gmap_api = os.getenv("GMAP_API_KEY")
 # --------------------- Getting API key ---------------------
 
 mcp = FastMCP("Demo")
@@ -112,6 +114,15 @@ def search_internet(url: str, task: str) -> str:
     result = loop.run_until_complete(run_Browse_task())
     loop.close()
     return result
+
+
+@mcp.tool()
+def get_agency_review(name: str) -> str:
+    place_id = find_place_id(name)
+    result = get_review_data(place_id)
+    # {'rating': 4.4, 'userRatingCount': 42, 'displayName': {'text': 'Endsleigh Court', 'languageCode': 'en'}}
+    result_str = f"The rating of {result['displayName']['text']} is {result['rating']}, with {result['userRatingCount']} reviews."
+    return result_str
 
 
 @mcp.tool()
