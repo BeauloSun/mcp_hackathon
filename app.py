@@ -103,21 +103,21 @@ with gr.Blocks() as demo:
             "calculator website and retrieve the total SDLT due based on provided property and "
             "purchaser details. This tool is specifically for properties in England or Northern Ireland."
         )
-        hbt_region = gr.Textbox(label="Region (England or Northern Ireland)", value="England")
-        hbt_property_type = gr.Textbox(label="Property Type (residential or non-residential)", value="residential")
-        hbt_day = gr.Textbox(label="Day of Transaction (DD)", value="01")
-        hbt_month = gr.Textbox(label="Month of Transaction (MM)", value="01")
-        hbt_year = gr.Textbox(label="Year of Transaction (YYYY)", value="2025")
-        hbt_purchaser_type = gr.Textbox(label="Purchaser Type (UK resident or non-UK resident)", value="UK resident") # "Are any of the purchasers non-UK resident?" -> No = UK resident
-        hbt_purchaser_purpose = gr.Textbox(label="Purchasing as Individual? (Yes or No)", value="Yes")
-        hbt_more_properties = gr.Checkbox(label="Will own two or more properties after purchase?", value=False)
-        hbt_replace_main_residence = gr.Checkbox(label="Replacing main residence (if owning more properties)?", value=False)
-        hbt_first_time_buyer = gr.Checkbox(label="Ever owned property before? (No = First Time Buyer)", value=False) # "Have you ever owned or part owned another property?" -> No = FTB
-        hbt_main_residence = gr.Checkbox(label="Will this be main residence (if first-time buyer)?", value=True)
-        hbt_price = gr.Number(label="Property Purchase Price (£)", value=300000)
+        hbt_region = gr.Textbox(label="Region (England or Northern Ireland)")
+        hbt_property_type = gr.Textbox(label="Property Type (residential or non-residential)")
+        hbt_day = gr.Textbox(label="Day of Transaction (DD)")
+        hbt_month = gr.Textbox(label="Month of Transaction (MM)")
+        hbt_year = gr.Textbox(label="Year of Transaction (YYYY)")
+        hbt_purchaser_type = gr.Textbox(label="Purchaser Type (UK resident or non-UK resident)") # "Are any of the purchasers non-UK resident?" -> No = UK resident
+        hbt_purchaser_purpose = gr.Textbox(label="Purchasing as Individual? (Yes or No)")
+        hbt_more_properties = gr.Checkbox(label="Will own two or more properties after purchase?")
+        hbt_replace_main_residence = gr.Checkbox(label="Replacing main residence (if owning more properties)?")
+        hbt_first_time_buyer = gr.Checkbox(label="Ever owned property before? (No = First Time Buyer)") # "Have you ever owned or part owned another property?" -> No = FTB
+        hbt_main_residence = gr.Checkbox(label="Will this be main residence (if first-time buyer)?")
+        hbt_price = gr.Number(label="Property Purchase Price (£)")
         
         run_hbt_calc_btn = gr.Button("Run Tax Calculator via Browser")
-        hbt_output = gr.Textbox(label="Tax Calculator Result", interactive=False)
+        hbt_output = gr.Textbox(label="Tax Calculator Result")
         
         run_hbt_calc_btn.click(
             home_buying_tax_calculator_browser_use,
