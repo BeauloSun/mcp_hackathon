@@ -14,6 +14,7 @@ load_dotenv()
 ninja_api = os.getenv("NINJA_API")
 gemini_api = os.getenv('GEMINI_API_KEY')
 gmap_api = os.getenv("GMAP_API_KEY")
+openai_api = os.getenv("OPENAI_API_KEY")
 # --------------------- Getting API key ---------------------
 
 mcp = FastMCP("Demo")
@@ -369,7 +370,7 @@ def home_buying_tax_calculator_browser_use(region: str, property_type: str, day:
         4. Once the result page loads, look for the field labeled **"Total SDLT due (£)"** — this is the final tax amount.
         Extract that value as the result.
         """
-        result = search_internet(url, task)
+        result = asyncio.run(search_internet(url, task))
         return result
 
 
