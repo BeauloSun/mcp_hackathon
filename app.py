@@ -349,7 +349,7 @@ with gr.Blocks(title="MCP Tool Interface", theme=gr.themes.Monochrome()) as demo
 if __name__ == "__main__":
     # Gradio will handle starting the MCP server with mcp_server=True
     print("Launching MCP Tool Interface…")
-    print(f"Available tools: {ui.get_tool_names()}") # Ensure ui is used here
+    print(f"Available tools: {get_tool_names_global()}") # Ensure ui is used here
     demo.launch(
         share=False,
         show_error=True,
