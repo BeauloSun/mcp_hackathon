@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "browser-use>=0.2.5",
+    "googlemaps>=4.10.0",
     "gradio>=5.32.1",
     "langchain-google-genai>=2.1.2",
     "mcp[cli]>=1.9.2",
