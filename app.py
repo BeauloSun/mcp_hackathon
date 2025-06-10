@@ -14,13 +14,6 @@ with gr.Blocks() as demo:
     gr.Markdown("# MCP Server Host")
     gr.Markdown("---")
 
-    with gr.Tab("MCP Server Control"):
-        gr.Markdown("## Start your FastMCP Server")
-        server_status_output = gr.Textbox(
-            label="Server Status", interactive=False)
-        start_server_btn = gr.Button("Start MCP Server")
-        start_server_btn.click(start_mcp_server, outputs=server_status_output)
-
     with gr.Tab("Interest Calculator Tool"):
         gr.Markdown("## Calculate Interest")
         gr.Markdown(
