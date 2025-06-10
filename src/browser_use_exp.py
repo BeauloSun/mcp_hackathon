@@ -14,7 +14,6 @@ sys.path.append(os.path.dirname(os.path.dirname(
 
 load_dotenv()
 
-
 llm = ChatOpenAI(
     model='gpt-4.1-mini'
 )
