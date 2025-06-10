@@ -81,16 +81,16 @@ mcp_interface = MCPToolInterface()
 def update_tool_interface(selected_tool_name: str):
     """Update the interface when a new tool is selected"""
     if not selected_tool_name or not mcp_interface.tools:
-        # Return updates to hide all components (8 textboxes + 8 radios)
-        updates = [gr.update(visible=False) for _ in range(16)]
+        # Return updates to hide all components (12 textboxes + 12 radios)
+        updates = [gr.update(visible=False) for _ in range(24)]
         updates.append(gr.update(value="Select a tool to see its description"))  # Description
         updates.append(gr.update(visible=False))  # Run button
         return updates
     
     tool = mcp_interface.get_tool_by_display_name(selected_tool_name)
     if not tool:
-        # Return updates to hide all components (8 textboxes + 8 radios)
-        updates = [gr.update(visible=False) for _ in range(16)]
+        # Return updates to hide all components (12 textboxes + 12 radios)
+        updates = [gr.update(visible=False) for _ in range(24)]
         updates.append(gr.update(value="Tool not found"))
         updates.append(gr.update(visible=False))
         return updates
@@ -104,8 +104,8 @@ def update_tool_interface(selected_tool_name: str):
     radio_updates = []
     param_names = list(properties.keys())
     
-    # Update up to 8 input components (textboxes and radios)
-    for i in range(8):
+    # Update up to 12 input components (textboxes and radios)
+    for i in range(12):
         if i < len(param_names):
             param_name = param_names[i]
             param_schema = properties[param_name]
@@ -181,10 +181,10 @@ def run_selected_tool(selected_tool_name: str, *args):
         param_names = list(properties.keys())
         
         tool_args = {}
-        num_text_inputs = 8  # Number of textbox components
+        num_text_inputs = 12  # Number of textbox components
 
         for i, param_name in enumerate(param_names):
-            if i >= 8: # UI supports max 8 parameters
+            if i >= 12: # UI supports max 12 parameters
                 break
 
             param_schema = properties[param_name]
@@ -272,7 +272,7 @@ with gr.Blocks(title="MCP Tool Interface", theme=gr.themes.Monochrome()) as demo
             input_text_components = []
             input_radio_components = []
 
-            for i in range(8):
+            for i in range(12):
                 # Textbox for general inputs
                 comp_text = gr.Textbox(label=f"Parameter {i+1}", visible=False)
                 input_text_components.append(comp_text)
