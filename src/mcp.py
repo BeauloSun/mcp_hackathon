@@ -3,7 +3,6 @@ from browser_use.browser import BrowserProfile, BrowserSession
 from langchain_google_genai import ChatGoogleGenerativeAI
 import requests
 import asyncio
-from gmap import find_place_id, get_review_data
 
 from mcp.server.fastmcp import FastMCP
 
@@ -131,8 +130,40 @@ def get_agency_review(name: str) -> str:
         str: A formatted string summarizing the agency's rating and review count,
              or an error message if the data cannot be found.
     """
-    place_id = find_place_id(name)
-    result = get_review_data(place_id)
+    base_url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
+    params = {
+        "input": name,
+        "inputtype": "textquery",
+        "fields": "place_id,name,formatted_address,geometry", # Request the fields you need
+        "key": gmap_api,
+    }
+    response = requests.get(base_url, params=params)
+    response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
+    data = response.json()
+
+    if data.get("status") == "OK" and data.get("candidates"):
+        # Return the first candidate's information
+        place = data["candidates"][0]
+        place_id = place.get("place_id")
+        # {
+        #     "place_id": place.get("place_id"),
+        #     "name": place.get("name"),
+        #     "formatted_address": place.get("formatted_address"),
+        #     "geometry": place.get("geometry")
+        # }
+
+    url = f"https://places.googleapis.com/v1/places/{place_id}"
+    # Check for available fields:
+    # https://developers.google.com/maps/documentation/places/web-service/place-details
+    # fields is for information of the place (NO SPACE AFTER COMMA)
+    fields = "displayName,rating,userRatingCount"
+    params = {
+        "fields": fields,
+        "key": gmap_api
+    }
+    response = requests.get(url, params=params)
+    response.raise_for_status()
+    result = response.json()
     # {'rating': 4.4, 'userRatingCount': 42, 'displayName': {'text': 'Endsleigh Court', 'languageCode': 'en'}}
     result_str = f"The rating of {result['displayName']['text']} is {result['rating']}, with {result['userRatingCount']} reviews."
     return result_str

@@ -1,9 +1,5 @@
 import requests
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
-gmap_api = os.getenv("GMAP_API_KEY")
 
 def find_place_id(query):
     """
@@ -66,8 +62,8 @@ def get_review_data(place_id):
 
 
 
-if __name__ == '__main__':
-    response = find_place_id('Endsleigh Court')
-    place_id = response['place_id']
-    data = get_review_data(place_id)
-    print(data)
+# if __name__ == '__main__':
+#     response = find_place_id('Endsleigh Court')
+#     place_id = response['place_id']
+#     data = get_review_data(place_id)
+#     print(data)

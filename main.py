@@ -1,5 +1,5 @@
 import gradio as gr
-from src.mcp import start_mcp_server, interest_calculator, monthly_payment, search_internet
+from src.mcp import start_mcp_server, interest_calculator, monthly_payment, search_internet, get_agency_review
 
 
 with gr.Blocks() as demo:
@@ -57,6 +57,20 @@ with gr.Blocks() as demo:
         browser_use_btn.click(
             search_internet,
             inputs=(website_url, task),
+            outputs=search_output
+        )
+
+    with gr.Tab("Get Review"):
+        gr.Markdown(
+            "This tool requires two inputs: url and task. Given both parameters, it can perform web scraping and return the related information in a human readable sentence(s)")
+        name = gr.Textbox(
+            label="Agency name (e.g.: Martin&co)", value='', interactive=True)
+        browser_use_btn = gr.Button("Start browsing")
+        search_output = gr.Textbox(
+            label="Search Output", interactive=False)
+        browser_use_btn.click(
+            get_agency_review,
+            inputs=(name),
             outputs=search_output
         )
 
