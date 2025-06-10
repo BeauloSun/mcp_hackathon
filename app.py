@@ -356,6 +356,5 @@ if __name__ == "__main__":
         share=False,
         show_error=True,
         inbrowser=True,
-        mcp_server=True, # Changed to True
-        mcp_api=mcp # Pass the mcp object to Gradio
+        mcp_server=True # Changed to True
     )
