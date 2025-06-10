@@ -8,86 +8,84 @@ from src.mcp import mcp # start_mcp_server removed as it's no longer directly ca
 from dotenv import load_dotenv
 load_dotenv()
 
-class MCPToolInterface:
-    def __init__(self):
-        self.tools = []
-        self.current_tool = None
-        self._loop = None
-        self.load_tools()
-    
-    def _run_async(self, coro):
-        """Helper to run async functions in sync context"""
-        try:
-            # Try to get the current loop
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                # If loop is running, run in a thread
-                import concurrent.futures
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    future = executor.submit(asyncio.run, coro)
-                    return future.result()
-            else:
-                return loop.run_until_complete(coro)
-        except RuntimeError:
-            # No loop exists, create a new one
-            return asyncio.run(coro)
-    
-    def load_tools(self):
-        """Load tools from MCP and normalize schema parameter types to lowercase."""
-        try:
-            raw_tools = self._run_async(mcp.list_tools())
-            self.tools = []
-            for tool in raw_tools:
-                if hasattr(tool, 'inputSchema') and tool.inputSchema and 'properties' in tool.inputSchema:
-                    for param_name, param_schema in tool.inputSchema['properties'].items():
-                        if isinstance(param_schema, dict) and 'type' in param_schema and isinstance(param_schema['type'], str):
-                            param_schema['type'] = param_schema['type'].lower()
-                self.tools.append(tool)
-            
-            print(f"Loaded and normalized {len(self.tools)} tools:")
-            for tool_item in self.tools: # Use a different variable name to avoid confusion with outer scope 'tool' if any
-                print(f"  - {tool_item.name}: {tool_item.description[:100] if tool_item.description else 'No description'}...")
-        except Exception as e:
-            print(f"Error loading tools: {e}")
-            self.tools = []
-    
-    def get_tool_names(self) -> List[str]:
-        """Get list of tool names for dropdown"""
-        return [tool.name.replace('_', ' ').title() for tool in self.tools]
-    
-    def get_tool_by_display_name(self, display_name: str):
-        """Get tool object by display name"""
-        tool_name = display_name.lower().replace(' ', '_')
-        for tool in self.tools:
-            if tool.name == tool_name:
-                return tool
-        return None
-    
-    def call_tool_sync(self, tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
-        """Call MCP tool synchronously with error handling"""
-        try:
-            print(f"Calling tool {tool_name} with args: {tool_args}")
-            result = self._run_async(mcp.call_tool(tool_name, tool_args))
-            print(f"Tool result: {result}")
-            return {"success": True, "result": result}
-        except Exception as e:
-            error_msg = f"Error calling tool {tool_name}: {str(e)}"
-            print(error_msg)
-            return {"success": False, "error": error_msg}
+# Global list to store tools
+mcp_tools_list = []
 
-# Initialize the interface
-ui = MCPToolInterface()
+def _run_async_global(coro):
+    """Helper to run async functions in sync context"""
+    try:
+        # Try to get the current loop
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # If loop is running, run in a thread
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(asyncio.run, coro)
+                return future.result()
+        else:
+            return loop.run_until_complete(coro)
+    except RuntimeError:
+        # No loop exists, create a new one
+        return asyncio.run(coro)
+
+def load_and_normalize_tools():
+    """Load tools from MCP, normalize schema, and store in mcp_tools_list."""
+    global mcp_tools_list
+    try:
+        raw_tools = _run_async_global(mcp.list_tools())
+        current_tools = [] # Temporary list for this load operation
+        for tool in raw_tools:
+            if hasattr(tool, 'inputSchema') and tool.inputSchema and 'properties' in tool.inputSchema:
+                for param_name, param_schema in tool.inputSchema['properties'].items():
+                    if isinstance(param_schema, dict) and 'type' in param_schema and isinstance(param_schema['type'], str):
+                        param_schema['type'] = param_schema['type'].lower()
+            current_tools.append(tool)
+        
+        mcp_tools_list = current_tools # Assign to global list
+        print(f"Loaded and normalized {len(mcp_tools_list)} tools:")
+        for tool_item in mcp_tools_list:
+            print(f"  - {tool_item.name}: {tool_item.description[:100] if tool_item.description else 'No description'}...")
+    except Exception as e:
+        print(f"Error loading tools: {e}")
+        mcp_tools_list = []
+
+def get_tool_names_global() -> List[str]:
+    """Get list of tool names for dropdown from mcp_tools_list"""
+    return [tool.name.replace('_', ' ').title() for tool in mcp_tools_list]
+
+def get_tool_by_display_name_global(display_name: str):
+    """Get tool object by display name from mcp_tools_list"""
+    tool_name = display_name.lower().replace(' ', '_')
+    for tool in mcp_tools_list:
+        if tool.name == tool_name:
+            return tool
+    return None
+
+def call_mcp_tool_sync_global(tool_name: str, tool_args: Dict[str, Any]) -> Dict[str, Any]:
+    """Call MCP tool synchronously with error handling"""
+    try:
+        print(f"Calling tool {tool_name} with args: {tool_args}")
+        result = _run_async_global(mcp.call_tool(tool_name, tool_args))
+        print(f"Tool result: {result}")
+        return {"success": True, "result": result}
+    except Exception as e:
+        error_msg = f"Error calling tool {tool_name}: {str(e)}"
+        print(error_msg)
+        return {"success": False, "error": error_msg}
+
+# Load tools at startup
+load_and_normalize_tools()
 
 def update_tool_interface(selected_tool_name: str):
     """Update the interface when a new tool is selected"""
-    if not selected_tool_name or not ui.tools:
+    if not selected_tool_name or not mcp_tools_list:
         # Return updates to hide all components (12 textboxes + 12 radios)
         updates = [gr.update(visible=False) for _ in range(24)]
         updates.append(gr.update(value="Select a tool to see its description"))  # Description
         updates.append(gr.update(visible=False))  # Run button
         return updates
     
-    tool = ui.get_tool_by_display_name(selected_tool_name)
+    tool = get_tool_by_display_name_global(selected_tool_name)
     if not tool:
         # Return updates to hide all components (12 textboxes + 12 radios)
         updates = [gr.update(visible=False) for _ in range(24)]
@@ -170,7 +168,7 @@ def run_selected_tool(selected_tool_name: str, *args):
     if not selected_tool_name:
         return {"error": "No tool selected"}
     
-    tool = ui.get_tool_by_display_name(selected_tool_name)
+    tool = get_tool_by_display_name_global(selected_tool_name)
     if not tool:
         return {"error": f"Tool '{selected_tool_name}' not found"}
     
@@ -226,7 +224,7 @@ def run_selected_tool(selected_tool_name: str, *args):
                 return {"error": f"Invalid value for parameter '{param_name}': {str(e)}"}
         
         # Call the tool
-        result = ui.call_tool_sync(tool.name, tool_args)
+        result = call_mcp_tool_sync_global(tool.name, tool_args)
         return result
         
     except Exception as e:
@@ -240,14 +238,14 @@ with gr.Blocks(title="MCP Tool Interface", theme=gr.themes.Monochrome()) as demo
     with gr.Tab("🔨 Tools"):
         gr.Markdown("## Available Tools")
         
-        if not ui.tools:
+        if not mcp_tools_list:
             gr.Markdown("⚠️ **No tools found!** Make sure your MCP server is running and tools are registered.")
         else:
             # Tool selector
             tool_dropdown = gr.Dropdown(
-                choices=ui.get_tool_names(),
+                choices=get_tool_names_global(),
                 label="Select Tool",
-                value=ui.get_tool_names()[0] if ui.get_tool_names() else None,
+                value=get_tool_names_global()[0] if get_tool_names_global() else None,
                 interactive=True
             )
             
@@ -297,8 +295,8 @@ with gr.Blocks(title="MCP Tool Interface", theme=gr.themes.Monochrome()) as demo
     with gr.Tab("📚 Documentation"):
         gr.Markdown("## MCP Tools Documentation")
         
-        if ui.tools:
-            for tool in ui.tools:
+        if mcp_tools_list:
+            for tool in mcp_tools_list:
                 with gr.Accordion(f"📖 {tool.name.replace('_', ' ').title()}", open=False):
                     gr.Markdown(f"**Name:** `{tool.name}`")
                     
