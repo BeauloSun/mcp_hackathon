@@ -241,15 +241,67 @@ def calculate_stamp_duty(property_price, is_first_time_buyer=False, is_additiona
     }
 
 
-def tax(region: str, transaction: str):
+@mcp.tool()
+def home_buying_tax_calculator_browser_use(region: str, property_type: str, day:str, month:str, year:str , purchaser_type:str, purchaser_purpose: str, more_properties:bool, replace:bool,First_time_Buyer: bool,main_residence:bool, price:int)-> str:
     if region.lower() in 'england' or region.lower() in 'northern ireland':
         url = 'https://www.tax.service.gov.uk/calculate-stamp-duty-land-tax/#!/intro'
         task = """
-        Follow the below steps to use the tax calculator in the url.
+        Follow the below steps to use the tax calculator in the url. 
         1. Click 'Start Now'
-        2. Click {transaction}, and click continue
+        2. Select 'Freehold' when the page asks "Is your transaction freehold or leasehold?"
+        3. Click {property_type} when the page asks "Is the transaction residential or non-residential?"
+        4. When you reach the page asking for the "Effective date of your transaction":
+            You are asked to provide the transaction date.
+            Use the format: **{day}/{month}/{year}** (e.g. 08/06/2025)
+            Then fill:
+            - Day → {day}
+            - Month → {month}
+            - Year → {year}
+
+        5. Proceed based on the {property_type}:
+            5.1 IF {property_type} IS 'residential':
+                You will be asked:
+                **"Are any of the purchasers non-UK resident?"** → Select {purchaser_type}
+            5.2 IF {property_type} IS 'non-residential':
+                → Skip to **Step 10**
+        6. When you reach the page asking for the "Are you purchasing the property as an individual?" → Select {purchaser_purpose}
+        7.Proceed based on the {purchaser_purpose}:
+            7.1 IF {purchaser_purpose} IS 'Yes':
+                You will be asked:
+                **"Will the purchase of the property result in owning two or more properties?"** → Select {more_properties}
+            7.2 IF {purchaser_purpose} IS 'NO':
+                → Skip to **Step 10**
+        8.Proceed based on the {more_properties}:
+            8.1 IF {more_properties} IS 'Yes':
+                You will be asked in same page:
+                **"Is the property being purchased replacing your main residence?"** → Select {replace}
+                → Skip to **Step 10**
+            8.2 IF {more_properties} IS 'NO':
+                You will be asked:
+                **"Have you ever owned or part owned another property?"** → Select {First_time_Buyer}
+        9.Proceed based on the {First_time_Buyer}:
+            9.1 IF {First_time_Buyer} IS 'Yes':
+                → Skip to **Step 10**
+            9.2 IF {First_time_Buyer}IS 'NO':
+                You will be asked:
+                **"Will this property be your main residence?"** → Select {main_residence}
+        10. You will be asked to **directly enter the purchase price**, enter the {price}.
+
+        At every step:
+        - Carefully read the question.
+        - Make the appropriate choice or enter the required value.
+        - Then click **'Continue'** to proceed.
+
+        Final step:
+
+        1. After entering the purchase price (`{price}`), click **'Continue'**.
+        2. You will be taken to a page titled **"Check your answers"**.
+        3. On that page, click the button labeled **"Calculate your SDLT"**.
+        4. Once the result page loads, look for the field labeled **"Total SDLT due (£)"** — this is the final tax amount.
+        Extract that value as the result.
         """
         result = search_internet(url, task)
+        return result
 
 
 def start_mcp_server():
