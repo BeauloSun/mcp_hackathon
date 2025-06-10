@@ -195,7 +195,7 @@ def get_agency_review(name: str) -> str:
 
 
 @mcp.tool()
-def calculate_stamp_duty(property_price, is_first_time_buyer=False, is_additional_property=False):
+def calculate_stamp_duty(property_price: int, is_first_time_buyer: bool = False, is_additional_property: bool = False):
     """
     Calculates the Stamp Duty Land Tax (SDLT) for a property purchase in England or Northern Ireland.
 
