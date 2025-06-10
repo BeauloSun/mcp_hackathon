@@ -3,7 +3,7 @@ import asyncio
 import json
 import threading
 from typing import Dict, Any, List, Optional
-from src.mcp import mcp, start_mcp_server
+from src.mcp import mcp # start_mcp_server removed as it's no longer directly called
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -76,18 +76,18 @@ class MCPToolInterface:
             return {"success": False, "error": error_msg}
 
 # Initialize the interface
-mcp_interface = MCPToolInterface()
+ui = MCPToolInterface()
 
 def update_tool_interface(selected_tool_name: str):
     """Update the interface when a new tool is selected"""
-    if not selected_tool_name or not mcp_interface.tools:
+    if not selected_tool_name or not ui.tools:
         # Return updates to hide all components (12 textboxes + 12 radios)
         updates = [gr.update(visible=False) for _ in range(24)]
         updates.append(gr.update(value="Select a tool to see its description"))  # Description
         updates.append(gr.update(visible=False))  # Run button
         return updates
     
-    tool = mcp_interface.get_tool_by_display_name(selected_tool_name)
+    tool = ui.get_tool_by_display_name(selected_tool_name)
     if not tool:
         # Return updates to hide all components (12 textboxes + 12 radios)
         updates = [gr.update(visible=False) for _ in range(24)]
@@ -170,7 +170,7 @@ def run_selected_tool(selected_tool_name: str, *args):
     if not selected_tool_name:
         return {"error": "No tool selected"}
     
-    tool = mcp_interface.get_tool_by_display_name(selected_tool_name)
+    tool = ui.get_tool_by_display_name(selected_tool_name)
     if not tool:
         return {"error": f"Tool '{selected_tool_name}' not found"}
     
@@ -226,19 +226,11 @@ def run_selected_tool(selected_tool_name: str, *args):
                 return {"error": f"Invalid value for parameter '{param_name}': {str(e)}"}
         
         # Call the tool
-        result = mcp_interface.call_tool_sync(tool.name, tool_args)
+        result = ui.call_tool_sync(tool.name, tool_args)
         return result
         
     except Exception as e:
         return {"error": f"Error executing tool: {str(e)}"}
-
-def start_server_wrapper():
-    """Wrapper for start_mcp_server to handle async properly"""
-    try:
-        result = mcp_interface._run_async(start_mcp_server())
-        return str(result)
-    except Exception as e:
-        return f"Error starting server: {str(e)}"
 
 # Create Gradio interface
 with gr.Blocks(title="MCP Tool Interface", theme=gr.themes.Monochrome()) as demo:
@@ -248,14 +240,14 @@ with gr.Blocks(title="MCP Tool Interface", theme=gr.themes.Monochrome()) as demo
     with gr.Tab("🔨 Tools"):
         gr.Markdown("## Available Tools")
         
-        if not mcp_interface.tools:
+        if not ui.tools:
             gr.Markdown("⚠️ **No tools found!** Make sure your MCP server is running and tools are registered.")
         else:
             # Tool selector
             tool_dropdown = gr.Dropdown(
-                choices=mcp_interface.get_tool_names(),
+                choices=ui.get_tool_names(),
                 label="Select Tool",
-                value=mcp_interface.get_tool_names()[0] if mcp_interface.get_tool_names() else None,
+                value=ui.get_tool_names()[0] if ui.get_tool_names() else None,
                 interactive=True
             )
             
@@ -305,8 +297,8 @@ with gr.Blocks(title="MCP Tool Interface", theme=gr.themes.Monochrome()) as demo
     with gr.Tab("📚 Documentation"):
         gr.Markdown("## MCP Tools Documentation")
         
-        if mcp_interface.tools:
-            for tool in mcp_interface.tools:
+        if ui.tools:
+            for tool in ui.tools:
                 with gr.Accordion(f"📖 {tool.name.replace('_', ' ').title()}", open=False):
                     gr.Markdown(f"**Name:** `{tool.name}`")
                     
@@ -357,23 +349,13 @@ with gr.Blocks(title="MCP Tool Interface", theme=gr.themes.Monochrome()) as demo
             gr.Markdown("No tools available. Make sure your MCP server is running and tools are registered.")
 
 if __name__ == "__main__":
-    import threading
-    
-    # 1) Start your MCP server in its own thread
-    def _start_mcp():
-        from src.mcp import start_mcp_server
-        print("Starting MCP server…")
-        start_mcp_server()
-    
-    t = threading.Thread(target=_start_mcp, daemon=True)
-    t.start()
-
-    # 2) Now launch Gradio WITHOUT mcp_server=True
+    # Gradio will handle starting the MCP server with mcp_server=True
     print("Launching MCP Tool Interface…")
-    print(f"Available tools: {mcp_interface.get_tool_names()}")
+    print(f"Available tools: {ui.get_tool_names()}") # Ensure ui is used here
     demo.launch(
         share=False,
         show_error=True,
         inbrowser=True,
-        mcp_server=False,
+        mcp_server=True, # Changed to True
+        mcp_api=mcp # Pass the mcp object to Gradio
     )
