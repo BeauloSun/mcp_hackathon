@@ -70,7 +70,7 @@ def monthly_payment(principal: float, number_of_years: int) -> str:
 
 
 @mcp.tool()
-def search_internet(url: str, task: str) -> str:
+async def search_internet(url: str, task: str) -> str:
     """
     **Navigates to a specified URL, performs web scraping based on a given task,
     and returns relevant information in a human-readable sentence(s).**
@@ -94,25 +94,18 @@ def search_internet(url: str, task: str) -> str:
         )
     )
 
-    async def run_Browse_task():
-        agent = Agent(
-            task=f'Go to {url}, and perform the task: {task}',
-            llm=llm,
-            max_actions_per_step=5,
-            browser_session=browser_session,
-        )
-        try:
-            history = await agent.run(max_steps=20)
-            result = str(history.final_result())
-            return f"Successfully went through {url}. Result message: {result}"
-        except Exception as e:
-            return f"Failed to navigate to {url}: {e}"
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    result = loop.run_until_complete(run_Browse_task())
-    loop.close()
-    return result
+    agent = Agent(
+        task=f'Go to {url}, and perform the task: {task}',
+        llm=llm,
+        max_actions_per_step=5,
+        browser_session=browser_session,
+    )
+    try:
+        history = await agent.run(max_steps=20)
+        result = str(history.final_result())
+        return f"Successfully went through {url}. Result message: {result}"
+    except Exception as e:
+        return f"Failed to navigate to {url}: {e}"
 
 
 @mcp.tool()
