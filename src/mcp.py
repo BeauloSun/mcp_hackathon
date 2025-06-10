@@ -133,6 +133,7 @@ def get_agency_review(name: str) -> str:
     response = requests.get(base_url, params=params)
     response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
     data = response.json()
+    place_id = None  # Initialize place_id
 
     if data.get("status") == "OK" and data.get("candidates"):
         # Return the first candidate's information
@@ -144,6 +145,14 @@ def get_agency_review(name: str) -> str:
         #     "formatted_address": place.get("formatted_address"),
         #     "geometry": place.get("geometry")
         # }
+    elif data.get("status") == "ZERO_RESULTS":
+        return f"Error: No agency found for '{name}'."
+    else:
+        error_message = data.get("error_message", "Unknown error from Google Places API.")
+        return f"Error finding agency '{name}': {data.get('status')} - {error_message}"
+
+    if not place_id:
+        return f"Error: Could not retrieve place_id for '{name}'."
 
     url = f"https://places.googleapis.com/v1/places/{place_id}"
     # Check for available fields:
