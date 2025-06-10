@@ -21,6 +21,17 @@ mcp = FastMCP("Demo")
 
 @mcp.tool()
 def interest_calculator(principal: float) -> str:
+    """
+    Calculates the simple interest payable for a given principal amount based on the current
+    Bank of England base rate.
+
+    Args:
+        principal (float): The principal amount for which to calculate interest.
+
+    Returns:
+        str: A string detailing the principal, interest payable, and the annual interest rate,
+             or an error message if the calculation fails.
+    """
     if not ninja_api:
         return "Error: NINJA_API environment variable not set."
 
@@ -44,6 +55,18 @@ def interest_calculator(principal: float) -> str:
 
 @mcp.tool()
 def monthly_payment(principal: float, number_of_years: int) -> str:
+    """
+    Calculates the fixed monthly payment for a loan based on the principal amount,
+    number of years, and the current Bank of England base rate.
+
+    Args:
+        principal (float): The total loan amount.
+        number_of_years (int): The duration of the loan in years.
+
+    Returns:
+        str: The calculated monthly payment as a string, or an error message if the
+             calculation fails or interest rate data cannot be fetched.
+    """
     if not ninja_api:
         return "Error: NINJA_API environment variable not set."
 
@@ -173,6 +196,25 @@ def get_agency_review(name: str) -> str:
 
 @mcp.tool()
 def calculate_stamp_duty(property_price, is_first_time_buyer=False, is_additional_property=False):
+    """
+    Calculates the Stamp Duty Land Tax (SDLT) for a property purchase in England or Northern Ireland.
+
+    This function uses predefined tax bands and rates. It considers whether the buyer is a
+    first-time buyer and if the property is an additional property, applying relevant
+    thresholds and surcharges.
+
+    Args:
+        property_price (float): The purchase price of the property.
+        is_first_time_buyer (bool, optional): True if the buyer is a first-time buyer.
+                                              Defaults to False.
+        is_additional_property (bool, optional): True if the property purchase will result
+                                                 in owning an additional property.
+                                                 Defaults to False.
+
+    Returns:
+        dict: A dictionary containing the total stamp duty, property price,
+              buyer status flags, and a breakdown of the calculation by tax band.
+    """
     # TODO: add logic to update this
     property_price = float(property_price)
     standard_bands = [
@@ -245,6 +287,31 @@ def calculate_stamp_duty(property_price, is_first_time_buyer=False, is_additiona
 
 @mcp.tool()
 def home_buying_tax_calculator_browser_use(region: str, property_type: str, day:str, month:str, year:str , purchaser_type:str, purchaser_purpose: str, more_properties:bool, replace:bool,First_time_Buyer: bool,main_residence:bool, price:int)-> str:
+    """
+    Uses a browser automation agent to navigate the UK government's Stamp Duty Land Tax (SDLT)
+    calculator website and retrieve the total SDLT due based on provided property and
+    purchaser details.
+
+    This tool is specifically for properties in England or Northern Ireland.
+
+    Args:
+        region (str): The region of the property (e.g., "England", "Northern Ireland").
+        property_type (str): Type of property (e.g., "residential", "non-residential").
+        day (str): Day of the transaction.
+        month (str): Month of the transaction.
+        year (str): Year of the transaction.
+        purchaser_type (str): Type of purchaser (e.g., "UK resident", "non-UK resident").
+        purchaser_purpose (str): Purpose of purchase (e.g., "Yes" if individual, "No" if company).
+        more_properties (bool): Whether the purchase results in owning two or more properties.
+        replace (bool): If owning more properties, whether this replaces the main residence.
+        First_time_Buyer (bool): Whether the purchaser has ever owned property before.
+        main_residence (bool): If a first-time buyer, whether this will be the main residence.
+        price (int): The purchase price of the property.
+
+    Returns:
+        str: The result from the browser interaction, typically the total SDLT due or an
+             error message if the process fails.
+    """
     if region.lower() in 'england' or region.lower() in 'northern ireland':
         url = 'https://www.tax.service.gov.uk/calculate-stamp-duty-land-tax/#!/intro'
         task = """
