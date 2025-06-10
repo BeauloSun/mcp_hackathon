@@ -5,6 +5,9 @@ import threading
 from typing import Dict, Any, List, Optional
 from src.mcp import mcp, start_mcp_server
 
+from dotenv import load_dotenv
+load_dotenv()
+
 class MCPToolInterface:
     def __init__(self):
         self.tools = []
