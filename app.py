@@ -123,7 +123,7 @@ def update_tool_interface(selected_tool_name: str):
             param_type = param_schema.get('type', 'string')
             param_default = param_schema.get('default')
             
-            if param_type == 'boolean':
+            if param_type == 'boolean' or param_type == 'bool':
                 textbox_updates.append(gr.update(visible=False)) # Hide textbox
                 radio_updates.append(gr.update(
                     visible=True,
@@ -191,7 +191,7 @@ def run_selected_tool(selected_tool_name: str, *args):
             param_type = param_schema.get('type', 'string')
             
             arg_value_from_ui = None
-            if param_type == 'boolean':
+            if param_type == 'boolean' or param_type == 'bool':
                 # Boolean value comes from the i-th radio button, which is after all textboxes in *args
                 arg_value_from_ui = args[num_text_inputs + i] 
             else:
@@ -209,7 +209,7 @@ def run_selected_tool(selected_tool_name: str, *args):
             
             # Convert based on type
             try:
-                if param_type == 'boolean':
+                if param_type == 'boolean' or param_type == 'bool':
                     # Value from gr.Radio is "True" or "False" string
                     tool_args[param_name] = (str(arg_value_from_ui) == "True")
                 elif param_type == 'integer':
