@@ -321,13 +321,23 @@ with gr.Blocks(title="MCP Tool Interface", theme=gr.themes.Monochrome()) as demo
             gr.Markdown("No tools available. Make sure your MCP server is running and tools are registered.")
 
 if __name__ == "__main__":
-    print("Launching MCP Tool Interface...")
-    print(f"Available tools: {mcp_interface.get_tool_names()}")
+    import threading
     
-    # Launch with minimal configuration to avoid async issues
+    # 1) Start your MCP server in its own thread
+    def _start_mcp():
+        from src.mcp import start_mcp_server
+        print("Starting MCP server…")
+        start_mcp_server()
+    
+    t = threading.Thread(target=_start_mcp, daemon=True)
+    t.start()
+
+    # 2) Now launch Gradio WITHOUT mcp_server=True
+    print("Launching MCP Tool Interface…")
+    print(f"Available tools: {mcp_interface.get_tool_names()}")
     demo.launch(
         share=False,
         show_error=True,
         inbrowser=True,
-        mcp_server=True
+        mcp_server=False
     )
