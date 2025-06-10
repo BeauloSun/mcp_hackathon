@@ -96,7 +96,7 @@ with gr.Blocks() as demo:
         is_first_time_buyer_checkbox = gr.Checkbox(label="Is First-Time Buyer?", value=False)
         is_additional_property_checkbox = gr.Checkbox(label="Is Additional Property?", value=False)
         calculate_sd_btn = gr.Button("Calculate Stamp Duty")
-        stamp_duty_output = gr.JSON(label="Stamp Duty Calculation", interactive=False) # Output is a dict
+        stamp_duty_output = gr.JSON(label="Stamp Duty Calculation") # Output is a dict
         calculate_sd_btn.click(
             calculate_stamp_duty,
             inputs=[property_price_input_sd, is_first_time_buyer_checkbox, is_additional_property_checkbox],
