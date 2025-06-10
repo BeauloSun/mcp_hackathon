@@ -33,12 +33,20 @@ class MCPToolInterface:
             return asyncio.run(coro)
     
     def load_tools(self):
-        """Load tools from MCP"""
+        """Load tools from MCP and normalize schema parameter types to lowercase."""
         try:
-            self.tools = self._run_async(mcp.list_tools())
-            print(f"Loaded {len(self.tools)} tools:")
-            for tool in self.tools:
-                print(f"  - {tool.name}: {tool.description[:100] if tool.description else 'No description'}...")
+            raw_tools = self._run_async(mcp.list_tools())
+            self.tools = []
+            for tool in raw_tools:
+                if hasattr(tool, 'inputSchema') and tool.inputSchema and 'properties' in tool.inputSchema:
+                    for param_name, param_schema in tool.inputSchema['properties'].items():
+                        if isinstance(param_schema, dict) and 'type' in param_schema and isinstance(param_schema['type'], str):
+                            param_schema['type'] = param_schema['type'].lower()
+                self.tools.append(tool)
+            
+            print(f"Loaded and normalized {len(self.tools)} tools:")
+            for tool_item in self.tools: # Use a different variable name to avoid confusion with outer scope 'tool' if any
+                print(f"  - {tool_item.name}: {tool_item.description[:100] if tool_item.description else 'No description'}...")
         except Exception as e:
             print(f"Error loading tools: {e}")
             self.tools = []
