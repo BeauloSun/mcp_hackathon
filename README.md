@@ -35,7 +35,7 @@ Check out the configuration reference at https://huggingface.co/docs/hub/spaces-
 # How to run
 
 1. uv sync
-2. uv run main.py
+2. uv run app.py
 
 # For browser-use package:
 
